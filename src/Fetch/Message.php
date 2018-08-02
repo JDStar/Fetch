@@ -21,6 +21,10 @@ namespace Fetch;
 class Message
 {
     /**
+     * iconv() function charset ignore constant
+     */
+    const CHARSET_FLAG_IGNORE = '//IGNORE';
+    /**
      * This is the connection/mailbox class that the email came from.
      *
      * @var Server
@@ -432,7 +436,7 @@ class Message
         $addressTypes = array('to', 'cc', 'bcc', 'from', 'sender', 'replyTo');
 
         if (!in_array($type, $addressTypes) || !isset($this->$type) || count($this->$type) < 1)
-            return false;
+            return array();
 
         if (!$asString) {
             if ($type == 'from')
@@ -670,18 +674,25 @@ class Message
     protected function processAddressObject($addresses)
     {
         $outputAddresses = array();
-        if (is_array($addresses))
-            foreach ($addresses as $address) {
-                if (property_exists($address, 'mailbox') && $address->mailbox != 'undisclosed-recipients') {
-                    $currentAddress = array();
-                    $currentAddress['address'] = $address->mailbox . '@' . $address->host;
-                    if (isset($address->personal)) {
-                        $currentAddress['name'] = MIME::decode($address->personal, self::$charset);
-                    }
-                    $outputAddresses[] = $currentAddress;
-                }
+        if (!is_array($addresses)) {
+            return $outputAddresses;
+        }
+        foreach ($addresses as $address) {
+            if (!is_object($address) ||
+                !isset($address->mailbox) ||
+                !isset($address->host) ||
+                $address->mailbox == 'undisclosed-recipients'
+            ) {
+                continue;
             }
-
+            $currentAddress = array();
+            $currentAddress['address'] = $address->mailbox . '@' . $address->host;
+            if (isset($address->personal)) {
+                $charset = self::$charset . self::CHARSET_FLAG_IGNORE;
+                $currentAddress['name'] = MIME::decode($address->personal, $charset);
+            }
+            $outputAddresses[] = $currentAddress;
+        }
         return $outputAddresses;
     }
 
