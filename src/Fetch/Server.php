@@ -141,6 +141,10 @@ class Server
 
         $this->service = $service;
     }
+    
+    public function setSslEnabled($sslEnabled) {
+        $this->sslEnabled = $sslEnabled;
+    }
 
     /**
      * This function sets the username and password used to connect to the server.
