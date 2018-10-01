@@ -291,9 +291,14 @@ class Server
 
         if (isset($this->port))
             $mailboxPath .= ':' . $this->port;
-
-        if ($this->service != 'imap')
-            $mailboxPath .= '/' . $this->service;
+        
+        if ($this->service != 'imap') {
+             $mailboxPath .= '/' . $this->service;
+        }
+        
+        if($this->service == 'pop3' && $this->sslEnabled) {
+            $mailboxPath .= '/ssl';
+        }
 
         foreach ($this->flags as $flag) {
             $mailboxPath .= '/' . $flag;
