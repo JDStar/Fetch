@@ -528,7 +528,7 @@ class Message
 
             if (!empty($parameters['charset']) && $parameters['charset'] !== self::$charset) {
                 $mb_converted = false;
-                if (function_exists('mb_convert_encoding')) {
+                if (function_exists('mb_convert_encoding') && strtolower($parameters['charset']) !== 'windows-1250') {
                     if (!in_array($parameters['charset'], mb_list_encodings())) {
                         if ($structure->encoding === 0) {
                             $parameters['charset'] = 'US-ASCII';
