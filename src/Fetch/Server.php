@@ -388,7 +388,7 @@ class Server
         $messages = array();
         for($i=0;$i<$limit;$i++) {
             ++$uid;
-            if ($header = imap_fetchheader($this->getImapStream(), $uid, FT_UID)) {
+            if ($header = @imap_fetchheader($this->getImapStream(), $uid, FT_UID)) {
                 if($message = $this->getMessageByUid($uid)){
                     $messages[] = $message;
                 }
