@@ -386,11 +386,13 @@ class Server
     public function getMoreMessagesFromUID($uid, $limit = 30)
     {
         $messages = array();
-        for($i=0;$i<$limit;$i++) {
+        $i=0;
+        while($i<$limit) {
             ++$uid;
-            if ($header = @imap_fetchheader($this->getImapStream(), $uid, FT_UID)) {
+            if (imap_msgno($this->getImapStream(), $uid) > 0) {
                 if($message = $this->getMessageByUid($uid)){
                     $messages[] = $message;
+                    ++$i;
                 }
             }
         }
