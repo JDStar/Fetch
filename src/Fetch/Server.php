@@ -381,19 +381,27 @@ class Server
      * Retrieves next messages from the last downloaded UID
      * @param $uid - last downloaded message UID
      * @param int $limit
+     * @var $latest - last e-mail UID
      * @return array
      */
     public function getMoreMessagesFromUID($uid, $limit = 30)
     {
+        $latest = $this->getMessageByUid($uid);
+        if($latest = imap_search($this->getImapStream(), 'ALL SINCE ' . gmdate('d-M-Y', $latest->getDate()), SE_UID)){
+            $latest = $latest[count($latest) - 1];
+        }
         $messages = array();
         $i=0;
-        while($i<$limit) {
+        while(($i<$limit)) {
             ++$uid;
             if (imap_msgno($this->getImapStream(), $uid) > 0) {
                 if($message = $this->getMessageByUid($uid)){
                     $messages[] = $message;
                     ++$i;
                 }
+            }
+            if ($latest == $uid) {
+                break;
             }
         }
         return $messages;
