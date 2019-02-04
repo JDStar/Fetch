@@ -548,6 +548,10 @@ class Message
                     }
                 }
             }
+            
+            if(!preg_match('//u', $messageBody) && function_exists('mb_convert_encoding')){
+                $messageBody = @mb_convert_encoding($messageBody, self::$charset, mb_detect_encoding($messageBody, mb_list_encodings()));
+            }
 
             if (strtolower($structure->subtype) === 'plain' || ($structure->type == 1 && strtolower($structure->subtype) !== 'alternative')) {
                 if (isset($this->plaintextMessage)) {
