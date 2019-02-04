@@ -376,6 +376,26 @@ class Server
             return array();
         }
     }
+    
+    /**
+     * Retrieves next messages from the last downloaded UID
+     * @param $uid - last downloaded message UID
+     * @param int $limit
+     * @return array
+     */
+    public function getMoreMessagesFromUID($uid, $limit = 30)
+    {
+        $messages = array();
+        for($i=0;$i<$limit;$i++) {
+            ++$uid;
+            if ($header = imap_fetchheader($this->getImapStream(), $uid, FT_UID)) {
+                if($message = $this->getMessageByUid($uid)){
+                    $messages[] = $message;
+                }
+            }
+        }
+        return $messages;
+    }
 
     /**
      * This function returns the recently received emails as an array of ImapMessage objects.
