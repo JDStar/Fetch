@@ -386,11 +386,12 @@ class Server
      */
     public function getMoreMessagesFromUID($uid, $limit = 30)
     {
+        $messages = array();
         $latest = $this->getMessageByUid($uid);
+        if(!$latest) return $messages;
         if($latest = imap_search($this->getImapStream(), 'ALL SINCE ' . gmdate('d-M-Y', $latest->getDate()), SE_UID)){
             $latest = $latest[count($latest) - 1];
         }
-        $messages = array();
         $i=0;
         while(($i<$limit)) {
             ++$uid;
@@ -400,7 +401,7 @@ class Server
                     ++$i;
                 }
             }
-            if ($latest == $uid) {
+            if ($latest <= $uid) {
                 break;
             }
         }
