@@ -388,7 +388,7 @@ class Server
     {
         $messages = array();
         $latest = $this->getMessageByUid($uid);
-        if(!$latest) return $messages;
+        if(!$latest) return false;
         if($latest = imap_search($this->getImapStream(), 'ALL SINCE ' . gmdate('d-M-Y', $latest->getDate()), SE_UID)){
             $latest = $latest[count($latest) - 1];
         }
