@@ -502,6 +502,32 @@ class Message
     {
         return $this->imapConnection;
     }
+    
+    
+    /**
+     * Table of Polish characters in the ISO 8859-2 coding for Quoted-Printable
+     * @return array
+     */
+    public function getPolishChars()
+    {
+        return ['=A1' => 'Ą', '=C6' => 'Ć', '=CA' => 'Ę', '=A3' => 'Ł', '=D1' => 'Ń', '=D3' => 'Ó',
+            '=A6' => 'Ś', '=AC' => 'Ź', '=AF' => 'Ż', '=B1' => 'ą', '=E6' => 'ć', '=EA' => 'ę',
+            '=B3' => 'ł', '=F1' => 'ń', '=F3' => 'ó', '=B6' => 'ś', '=BC' => 'ź', '=BF' => 'ż'];
+    }
+
+    /**
+     * Replaces the damaged Quoted-Printable encoding with the appropriate Polish characters
+     * @param $body
+     * @return mixed|string|string[]|null
+     */
+    public function polishCharReplace($body) {
+
+        foreach($this->getPolishChars() as $key => $polish_char) {
+            $body = str_replace($key, $polish_char, $body);
+        }
+        $body = preg_replace('/=\n/', ' ', $body);
+        return $body;
+    }
 
     /**
      * This function takes in a structure and identifier and processes that part of the message. If that portion of the
@@ -523,7 +549,7 @@ class Message
             $messageBody = isset($partIdentifier) ?
                 imap_fetchbody($this->imapStream, $this->uid, $partIdentifier, FT_UID | FT_PEEK)
                 : imap_body($this->imapStream, $this->uid, FT_UID | FT_PEEK);
-
+            $msgCopy = $messageBody;
             $messageBody = self::decode($messageBody, $structure->encoding);
 
             if (!empty($parameters['charset']) && $parameters['charset'] !== self::$charset) {
@@ -552,6 +578,12 @@ class Message
             if(!preg_match('//u', $messageBody) && function_exists('mb_convert_encoding')){
                 $messageBody = @mb_convert_encoding($messageBody, self::$charset, mb_detect_encoding($messageBody, mb_list_encodings()));
             }
+            
+            //looking for corrupted decoding
+            if(strpos($messageBody, '?') !== false) {
+                $messageBody = $this->polishCharReplace($msgCopy);
+            }
+
 
             if (strtolower($structure->subtype) === 'plain' || ($structure->type == 1 && strtolower($structure->subtype) !== 'alternative')) {
                 if (isset($this->plaintextMessage)) {
